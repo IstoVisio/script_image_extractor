@@ -6,8 +6,9 @@ import numpy as np
 import tifffile
 import subprocess
 
-def extract(projectPath): 
-	project = sy.get_project(projectPath)
+def extract(project): 
+	projectPath = project.get_path_to_syg_file().string()
+	print("Extracting project from: " + projectPath)
 	head, tail = os.path.split(projectPath)
 	# Get a dictionary showing the number of blocks in each level
 	#codebreak()
@@ -39,7 +40,7 @@ def extract(projectPath):
 		tifffile.imwrite(tail + "_" + s + ".tiff", data)
 	subprocess.run(['explorer', head])
 
-def main():
+def main(args):
 	print("Image Extractor, by Michael Morehead")
 	print("Attempts to extract the original data volume from a syGlass project")
 	print("and write it to a series of TIFF files")
@@ -47,10 +48,5 @@ def main():
 	print("Usage: Highlight a project and use the Script Launcher in syGlass.")
 	print("---------------------------------------")
 
-	print(sys.argv)
-	for syGlassProjectPath in sys.argv:
-		print("Extracting project from: " + syGlassProjectPath)
-		extract(syGlassProjectPath)
-
-if __name__== "__main__":
-	main()
+	for project in args["selected_projects"]:
+		extract(project)
