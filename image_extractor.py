@@ -31,7 +31,8 @@ def extract(project):
 		block = project.get_custom_block(0, max_resolution_level, offset, dimensions)
 		data = block.data
 		print(s + ".tiff")
-		if (len(np.shape(data)) > 3):
+		channels = np.shape(data)[3]
+		if channels == 2 or channels == 4:
 			data = np.swapaxes(data, 1, 3)
 			data = np.swapaxes(data, 2, 3)
 			tifffile.imwrite(tail + "_" + s + ".tiff", data, imagej=True, metadata={'axes': 'ZCYX'})
