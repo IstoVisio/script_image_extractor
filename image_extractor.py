@@ -1,7 +1,4 @@
 import os
-import sys
-import syglass as sy
-from syglass import pyglass
 import numpy as np
 import tifffile
 import subprocess
@@ -16,9 +13,6 @@ def extract(project):
 
 	# Calculate the index of the highest resolution level
 	max_resolution_level = len(resolution_map) - 1
-
-	# Determine the number of blocks in this level
-	block_count = resolution_map[max_resolution_level]
 	
 	# get size of project       
 	total_size = project.get_size(max_resolution_level)
@@ -37,7 +31,13 @@ def extract(project):
 		block = project.get_custom_block(0, max_resolution_level, offset, dimensions)
 		data = block.data
 		print(s + ".tiff")
-		tifffile.imwrite(tail + "_" + s + ".tiff", data)
+		channels = np.shape(data)[3]
+		if channels == 2 or channels == 4:
+			data = np.swapaxes(data, 1, 3)
+			data = np.swapaxes(data, 2, 3)
+			tifffile.imwrite(tail + "_" + s + ".tiff", data, imagej=True, metadata={'axes': 'ZCYX'})
+		else:
+			tifffile.imwrite(tail + "_" + s + ".tiff", data)
 	subprocess.run(['explorer', head])
 
 def main(args):
