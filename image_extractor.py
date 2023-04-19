@@ -2,6 +2,9 @@ import os
 import numpy as np
 import tifffile
 import subprocess
+import syglass as sy
+import sys
+
 
 def extract(project): 
 	projectPath = project.get_path_to_syg_file().string()
@@ -40,13 +43,30 @@ def extract(project):
 			tifffile.imwrite(tail + "_" + s + ".tiff", data)
 	subprocess.run(['explorer', head])
 
-def main(args):
+
+def print_info():
 	print("Image Extractor, by Michael Morehead")
 	print("Attempts to extract the original data volume from a syGlass project")
 	print("and write it to a series of TIFF files")
 	print("---------------------------------------")
-	print("Usage: Highlight a project and use the Script Launcher in syGlass.")
+	print("Usage from CLI: image_extractor.py [path/to/project.syg]")
+	print("---------------------------------------")
+	print("Usage from syGlass: highlight projects from which to extract data")
 	print("---------------------------------------")
 
+
+def main(args):
+	print_info()
 	for project in args["selected_projects"]:
 		extract(project)
+
+
+if __name__ == "__main__":
+	if not len(sys.argv) == 2:
+		print_info()
+	else:
+		project_path = sys.argv[1]
+		if not sy.is_project(project_path):
+			print("Path provided does not describe a valid syGlass project")
+		else:
+			extract(sy.get_project(project_path))
