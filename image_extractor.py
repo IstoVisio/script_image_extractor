@@ -24,24 +24,31 @@ def extract(project):
 	ysize = total_size[2]
 	
 	zslices = total_size[0]
+
+	# get number of timepoints
+	number_of_timepoints = project.get_timepoint_count()
 	
 	dimensions = np.asarray([1,xsize, ysize])
 	offset = np.asarray([0,0,0])
 	os.chdir(os.path.dirname(projectPath))
-	for slice in range(zslices):
-		s = str(slice).zfill(5)
-		offset[0] = slice
-		block = project.get_custom_block(0, max_resolution_level, offset, dimensions)
-		data = block.data
-		print(s + ".tiff")
-		channels = np.shape(data)[3]
-		if channels == 2 or channels == 4:
-			data = np.swapaxes(data, 1, 3)
-			data = np.swapaxes(data, 2, 3)
-			tifffile.imwrite(tail + "_" + s + ".tiff", data, imagej=True, metadata={'axes': 'ZCYX'})
-		else:
-			tifffile.imwrite(tail + "_" + s + ".tiff", data)
-	subprocess.run(['explorer', head])
+	for time in range(number_of_timepoints):
+		t = str(time).zfill(5)
+		for slice in range(zslices):
+			s = str(slice).zfill(5)
+			offset[0] = slice
+			block = project.get_custom_block(time, max_resolution_level, offset, dimensions)
+			data = block.data
+			channels = np.shape(data)[3]
+			file_name = head + "/" + tail[:-4] + "_Z-" + s + "_T-" + t + ".tiff"
+			print("Writing " + file_name + "...")
+			if channels == 2 or channels == 4:
+				data = np.swapaxes(data, 1, 3)
+				data = np.swapaxes(data, 2, 3)
+				tifffile.imwrite(file_name, data, imagej=True, metadata={'axes': 'ZCYX'})
+			else:
+				tifffile.imwrite(tfile_name, data)
+	head = head.replace("/", "\\")
+	subprocess.Popen(f'explorer {head}')
 
 
 def print_info():
