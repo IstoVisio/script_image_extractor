@@ -58,7 +58,7 @@ def extract(project):
 		if len(zarray) > 0:
 			#code.interact(local=locals())
 			file_name = head + "/" + tail[:-4] + "_T-" + t + ".tiff"
-			zstack = np.dstack(zarray)
+			zstack = np.hstack(zarray)
 			zstack = np.swapaxes(zstack, 0, 1)
 			print("Writing " + file_name + "...")
 			tifffile.imwrite(file_name, zstack, imagej=True, metadata={'axes': 'ZCYX'}) 
