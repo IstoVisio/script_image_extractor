@@ -4,6 +4,7 @@ import tifffile
 import subprocess
 import syglass as sy
 import sys
+import code
 
 
 def extract(project): 
@@ -32,6 +33,7 @@ def extract(project):
 	offset = np.asarray([0,0,0])
 	os.chdir(os.path.dirname(projectPath))
 	for time in range(number_of_timepoints):
+		zarray = []
 		t = str(time).zfill(5)
 		for slice in range(zslices):
 			s = str(slice).zfill(5)
@@ -39,14 +41,27 @@ def extract(project):
 			block = project.get_custom_block(time, max_resolution_level, offset, dimensions)
 			data = block.data
 			channels = np.shape(data)[3]
+			time = len(np.shape(data))
 			file_name = head + "/" + tail[:-4] + "_Z-" + s + "_T-" + t + ".tiff"
-			print("Writing " + file_name + "...")
-			if channels == 2 or channels == 4:
+			#code.interact(local=locals())
+			if channels == 2:
 				data = np.swapaxes(data, 1, 3)
 				data = np.swapaxes(data, 2, 3)
+				print("Writing " + file_name + "...")
 				tifffile.imwrite(file_name, data, imagej=True, metadata={'axes': 'ZCYX'})
+			elif time == 4:
+				data = np.swapaxes(data, 1, 3)
+				data = np.swapaxes(data, 2, 3)
+				zarray.append(data)
 			else:
-				tifffile.imwrite(tfile_name, data)
+				tifffile.imwrite(file_name, data)
+		if len(zarray) > 0:
+			#code.interact(local=locals())
+			file_name = head + "/" + tail[:-4] + "_T-" + t + ".tiff"
+			zstack = np.dstack(zarray)
+			zstack = np.swapaxes(zstack, 0, 1)
+			print("Writing " + file_name + "...")
+			tifffile.imwrite(file_name, zstack, imagej=True, metadata={'axes': 'ZCYX'}) 
 	head = head.replace("/", "\\")
 	subprocess.Popen(f'explorer {head}')
 
